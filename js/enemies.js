@@ -8,6 +8,8 @@ class Ennemies {
         this.coin = coin;
     }
 
+  
+
     setClasse(classe) {
         this.classe = classe;
     }
@@ -43,10 +45,31 @@ class Ennemies {
 		return this.attackSpeed;
 	}
 
+    
+}
+
+class Direction{
+    static UP = new Direction("up")
+    static DOWN = new Direction("down")
+    static LEFT = new Direction("left")
+    static RIGHT = new Direction("right")
+
+
+    constructor(direction){
+        this.direction= direction
+    }
+
+    static randomDirection = (exclude = Direction) => {
+        let newDirection = Phaser.Math.Between(0, 3)
+        while (newDirection === exclude)
+        {
+            newDirection = Phaser.Math.Between(0, 3)
+        }
+    
+        return newDirection
+    }
     enemyFollows () {
         this.physics.moveToObject(this.enemy, this.player, 100);
     }
 }
-
-Enumerator Direction
 

@@ -29,7 +29,7 @@ class GameScene extends Phaser.Scene {
     // Load all images once to prevent lagging
     this.load.image('FloorTiles', 'assets/Tiles.png');
     this.load.tilemapTiledJSON('map', 'assets/maptest.json');
-    this.load.atlas('playerAtlas', 'assets/player.png', 'assets/player.json')
+    this.load.atlas('player', 'assets/player.png', 'assets/player.json')
   }
 
   create() {
@@ -39,8 +39,9 @@ class GameScene extends Phaser.Scene {
     map.createLayer('FloorLayer', tileset);
     
     // Player and camera
-    player = new Player(this.Game, "Gustave", 100, 150, 6, 12, 3);
-    this.cameras.main.startFollow(player, true);
+    player = new Player(this, 0, 0, "Gustave", 100, 150, 6, 12, 3);
+    this.cameras.main.startFollow(player.sprite, true);
+  
   }
 
   update() {

@@ -1,7 +1,6 @@
 export default class Player {
-    constructor(game, name, health, movementSpeed, attackDamage, attackSpeed, tickets) {
-        this.game = game;
-        this.sprite = game.physics.add.sprite(0, 0, 'player').setOrigin(0, 0);
+    constructor(game, posX, posY, name, health, movementSpeed, attackDamage, attackSpeed, tickets) {
+        this.sprite = game.physics.add.sprite(posX, posY, 'player', 'walk-down/walk-down-3.png').setOrigin(0, 0);
         this.cursors = game.input.keyboard.createCursorKeys();
 
         this.name = name;
@@ -10,10 +9,6 @@ export default class Player {
         this.attackDamage = attackDamage;
         this.attackSpeed = attackSpeed;
         this.tickets = tickets;
-    }
-
-    init() {
-        // init ?
     }
 
     setName(name) {
@@ -44,6 +39,7 @@ export default class Player {
         // Handle keyboard input (Arrows)
         var y = 0;
         var x = 0;
+        
 
         if (this.cursors.up.isDown) {
             y = -1;
@@ -61,7 +57,9 @@ export default class Player {
             x = 1;
             // Anim right
         }
+
         this.sprite.body.setVelocityY((this.movementSpeed - 50 * x * x) * y);
         this.sprite.body.setVelocityX((this.movementSpeed - 50 * y * y) * x);
     }
+
 }
