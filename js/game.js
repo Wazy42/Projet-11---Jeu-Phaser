@@ -1,4 +1,5 @@
 import Player from "./player.js";
+import Ennemy from "./enemies.js";
 
 const SCREEN_X_SIZE = 1920;
 const SCREEN_Y_SIZE = 1080;
@@ -18,11 +19,11 @@ const WORLD_Y_SIZE = 5000;
 //           X    \  /
 //               (1, 0)
 
-var player;
-
 class GameScene extends Phaser.Scene {
   constructor() {
     super();
+    this.player;
+    this.ennemies = [];
   }
 
   preload() {
@@ -30,31 +31,59 @@ class GameScene extends Phaser.Scene {
     this.load.image('FloorTiles', 'assets/Tiles.png');
     this.load.tilemapTiledJSON('map', 'assets/maptest.json');
     this.load.atlas('player', 'assets/player.png', 'assets/player.json')
+    this.load.image('zombie', 'assets/zombie.png');
+
   }
 
   create() {
+    // Disable option GUI on right click
+    this.input.mouse.disableContextMenu();
+
     // Import map (floor)
-    var map = this.add.tilemap('map');
-    var tileset = map.addTilesetImage('FloorTiles', 'FloorTiles');
+    const map = this.add.tilemap('map');
+    const tileset = map.addTilesetImage('FloorTiles', 'FloorTiles');
     map.createLayer('FloorLayer', tileset);
-    
+    this.wallLayer = map.createLayer('WallLayer', tileset)
+
     // Player and camera
-    player = new Player(this, 0, 0, "Gustave", 100, 150, 6, 12, 3);
-    this.cameras.main.startFollow(player.sprite, true);
-  
+    this.player = new Player(this, 150, 150, "Gustave", 100, 150, 6, 12, 3);
+    this.cameras.main.startFollow(this.player.sprite, true);
+
+    // Ennemies
+    for (let i = 0; i < 7; i++) {
+      var newGuy = new Ennemy(this, -150+i*50, 300, 'Zombie', 100, 100, 1, 1, 30);
+      newGuy.setTarget(this.player);
+      
+      this.ennemies.forEach(ennemy => { // Add collisions with all enemies
+        this.physics.add.collider(newGuy.sprite, ennemy.sprite);
+      })
+      this.physics.add.collider(newGuy.sprite, this.player.sprite);
+      this.ennemies.push(newGuy);
+    }
+
+    // Player Collision with world
+    map.setCollisionBetween(1, 999, true, 'WallLayer');
+    this.physics.world.addCollider(this.player.sprite, this.wallLayer)
+    this.wallLayer.setCollisionByProperty({ collides: true });
+
+    // debug config
+    const debugGraphics = this.add.graphics().setAlpha(0.7)
+	  this.wallLayer.renderDebug(debugGraphics, {
+		tileColor: null,
+		collidingTileColor: new Phaser.Display.Color(243, 234, 48, 255),
+		faceColor: new Phaser.Display.Color(40, 39, 37, 255)
+    });
   }
 
   update() {
-    player.checkKeyboard();
+    this.player.checkKeyboard();
+    this.ennemies.forEach(ennemy => {
+      ennemy.updateIA(this)
+      if (!this.player.isAlive()) {
+        // Afficher menu mort
+      }
+    });
   }
-
-  // addImage(x, y, image) {
-  //   // Transform the x and y grid coordinates to real isometrci coordinates
-  //   let realX = TILE_X_SIZE * (x + y) / 2;
-  //   let realY = TILE_Y_SIZE * (x - y - 1 + GRID_Y_SIZE) / 2;
-  //   // Display the image to coordinates
-  //   this.add.image(realX, realY, image).setOrigin(0,0);
-  // }
 }
 
 const config = {
@@ -65,9 +94,9 @@ const config = {
   physics: {
     default: 'arcade',
     arcade: {
-        debug: false
+      debug: true
     }
   }
 }
 
-const game = new Phaser.Game(config);
+var game = new Phaser.Game(config);

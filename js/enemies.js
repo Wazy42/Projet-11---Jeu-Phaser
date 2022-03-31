@@ -1,75 +1,79 @@
-class Ennemies {
-    constructor(classe, health, movementSpeed, attackDamage, attackSpeed) {
-        this.classe = classe;
-        this.health = health;
-        this.movementSpeed = movementSpeed;
-        this.attackDamage = attackDamage;
-        this.attackSpeed = attackSpeed;
-        this.coin = coin;
-    }
+export default class Ennemy {
+  constructor(game, posX, posY, classe, health, movementSpeed, attackDamage, attackSpeed, range) {
+    this.sprite = game.physics.add.sprite(posX, posY, 'zombie', 'zombie.png').setOrigin(0, 0);
+    this.sprite.body.setSize(15,30,10,10);
 
-  
+    this.classe = classe;
+    this.health = health;
+    this.maxHealth = health;
+    this.movementSpeed = movementSpeed;
+    this.attackDamage = attackDamage;
+    this.attackSpeed = attackSpeed;
+    this.range = range; // range (in pixels)
+    this.attackOnCD = 0;
+    this.reward = 0; // what the ennemy loots
+  }
 
-    setClasse(classe) {
-        this.classe = classe;
-    }
-    getClasse() {
-		return this.classe;
-    }
+  setClasse(classe) {
+    this.classe = classe;
+  }
 
-    setHealth(health) {
-        this.health = health;
-    }
-    getHealth() {
-		return this.health;
-    }
+  setHealth(health) {
+    this.health = health;
+  }
 
-    setMovementSpeed(movementSpeed) {
-        this.movementSpeed = movementSpeed;
-    }
-    getMovementSpeed() {
-		return this.movementSpeed;
-	}
+  setMovementSpeed(movementSpeed) {
+    this.movementSpeed = movementSpeed;
+  }
 
-    setAttackDamage(attackDamage) {
-        this.attackDamage = attackDamage;
-    }
-	getAttackDamage() {
-		return this.attackDamage;
-	}
+  setAttackDamage(attackDamage) {
+    this.attackDamage = attackDamage;
+  }
 
-    setAttackSpeed(attackSpeed) {
-        this.attackSpeed = attackSpeed;
-    }
-	getAttackSpeed() {
-		return this.attackSpeed;
-	}
+  setAttackSpeed(attackSpeed) {
+    this.attackSpeed = attackSpeed;
+  }
 
-    
+  setRange(range) {
+    this.range = range;
+  }
+
+  setReward(reward) {
+    this.reward = reward;
+  }
+
+  setTarget(target) {
+    // The ennemy go straight for his target and try to attack it
+    this.target = target;
+  }
+
+  updateIA(game) { // this function is called in the phaser update (main loop)
+    /*
+    The ennemy focus one target at a time, it goes straight to it
+    */
+
+    if (Phaser.Math.Distance.BetweenPoints(this.sprite, this.target.sprite) > this.range)
+      game.physics.moveToObject(this.sprite, this.target.sprite, this.movementSpeed);
+    else {
+      this.sprite.setVelocity(0, 0);
+      if (!this.attackOnCD) {
+        this.attackCooldown();
+        game.time.delayedCall(1000/this.attackSpeed, this.attackCooldown, [], this);
+        this.attackTarget()
+      }
+    }
+  }
+
+  attackTarget() {
+    this.target.getHurt(this.attackDamage);
+    // add animation here
+  }
+
+  attackCooldown() {
+    if (this.attackOnCD == 0)
+      this.attackOnCD = 1;
+    else 
+      this.attackOnCD = 0;
+  }
+
 }
-
-class Direction{
-    static UP = new Direction("up")
-    static DOWN = new Direction("down")
-    static LEFT = new Direction("left")
-    static RIGHT = new Direction("right")
-
-
-    constructor(direction){
-        this.direction= direction
-    }
-
-    static randomDirection = (exclude = Direction) => {
-        let newDirection = Phaser.Math.Between(0, 3)
-        while (newDirection === exclude)
-        {
-            newDirection = Phaser.Math.Between(0, 3)
-        }
-    
-        return newDirection
-    }
-    enemyFollows () {
-        this.physics.moveToObject(this.enemy, this.player, 100);
-    }
-}
-

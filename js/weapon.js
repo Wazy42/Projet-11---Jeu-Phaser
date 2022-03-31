@@ -1,14 +1,61 @@
-class Weapon {
-    constructor(knife, shotgun){
-        this.knife = knife;
-        this.sprite = knife.physics.add.sprite(posX, posY, '').setOrigin(player);
-        this.shotgun = shotgun;
-        this.cursor = game.input.keyboard.createCursorKeys();
-    }
-
-    checkweapon() {
-        if (this.cursor.A.isDown) {
-            knife = new knife(this, posX , posY);
-        }
+export default class Weapon {
+    constructor(game, posX, posY){
     }
 }
+
+function preload() {
+
+    game.load.image('bullet', 'assets/sprites/bullet.png');
+
+}
+
+var sprite;
+var weapon;
+var cursors;
+var fireButton;
+
+function create() {
+
+    //  Creates 1 single bullet, using the 'bullet' graphic
+    weapon = game.add.weapon(1, 'bullet');
+
+    //  The bullet will be automatically killed when it leaves the world bounds
+    weapon.bulletKillType = Phaser.Weapon.KILL_WORLD_BOUNDS;
+
+    //  Because our bullet is drawn facing up, we need to offset its rotation:
+    weapon.bulletAngleOffset = 90;
+
+    //  The speed at which the bullet is fired
+    weapon.bulletSpeed = 400;
+
+    sprite = this.add.sprite(320, 500, 'player');
+
+    game.physics.arcade.enable(sprite);
+
+    //  Tell the Weapon to track the 'player' Sprite, offset by 14px horizontally, 0 vertically
+    weapon.trackSprite(sprite, 14, 0);
+
+    cursors = this.input.keyboard.createCursorKeys();
+
+    fireButton = this.input.keyboard.addKey(Phaser.KeyCode.SPACEBAR);
+
+}
+
+function update() {
+
+    sprite.body.velocity.x = 0;
+
+    if (fireButton.isDown)
+    {
+        weapon.fire();
+    }
+
+}
+
+function render() {
+
+    weapon.debug();
+
+}
+
+
