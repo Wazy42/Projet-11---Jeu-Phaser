@@ -1,7 +1,9 @@
+const VIEW_DISTANCE = 300;
+
 export default class Ennemy {
   constructor(game, posX, posY, classe, health, movementSpeed, attackDamage, attackSpeed, range) {
-    this.sprite = game.physics.add.sprite(posX, posY, 'zombie', 'zombie.png').setOrigin(0, 0);
-    this.sprite.body.setSize(15,30,10,10);
+    this.sprite = game.physics.add.sprite(posX, posY, classe).setOrigin(0, 0);
+    this.sprite.body.setSize(15, 30, 10, 10);
 
     this.classe = classe;
     this.health = health;
@@ -11,7 +13,7 @@ export default class Ennemy {
     this.attackSpeed = attackSpeed;
     this.range = range; // range (in pixels)
     this.attackOnCD = 0;
-    this.reward = 0; // what the ennemy loots
+    this.ennemies = [];
   }
 
   setClasse(classe) {
@@ -38,13 +40,34 @@ export default class Ennemy {
     this.range = range;
   }
 
-  setReward(reward) {
-    this.reward = reward;
+  setTarget(target) {
+    this.target = target;
   }
 
-  setTarget(target) {
-    // The ennemy go straight for his target and try to attack it
-    this.target = target;
+  getTargetedBy(ennemy) {
+    this.ennemies.push(ennemy);
+  }
+
+  lossTargetFrom(ennemy) {
+    this.ennemies.splice(this.ennemies.indexOf(ennemy), 1);
+  }
+
+  getHurt(damage) {
+    this.health -= damage;
+    console.log(this.health)
+  }
+
+  isAlive() {
+    if (this.health > 0) return 1;
+    return 0;
+  }
+
+  destroyItself() {
+    this.setTarget(null);
+    this.ennemies.forEach(ennemy => {
+      ennemy.setTarget(null);
+    });
+    this.sprite.destroy();
   }
 
   updateIA(game) { // this function is called in the phaser update (main loop)
@@ -52,13 +75,21 @@ export default class Ennemy {
     The ennemy focus one target at a time, it goes straight to it
     */
 
+    this.sprite.setVelocity(0, 0); // Idle animation ?
+
+    if (Phaser.Math.Distance.BetweenPoints(this.sprite, this.target.sprite) > VIEW_DISTANCE) {
+      this.target.lossTargetFrom(this);
+      return;
+    }
+
+    this.target.getTargetedBy(this)
     if (Phaser.Math.Distance.BetweenPoints(this.sprite, this.target.sprite) > this.range)
       game.physics.moveToObject(this.sprite, this.target.sprite, this.movementSpeed);
     else {
       this.sprite.setVelocity(0, 0);
       if (!this.attackOnCD) {
         this.attackCooldown();
-        game.time.delayedCall(1000/this.attackSpeed, this.attackCooldown, [], this);
+        game.time.delayedCall(1000 / this.attackSpeed, this.attackCooldown, [], this);
         this.attackTarget()
       }
     }
@@ -72,7 +103,7 @@ export default class Ennemy {
   attackCooldown() {
     if (this.attackOnCD == 0)
       this.attackOnCD = 1;
-    else 
+    else
       this.attackOnCD = 0;
   }
 

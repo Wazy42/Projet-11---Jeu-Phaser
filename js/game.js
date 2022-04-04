@@ -1,11 +1,6 @@
 import Player from "./player.js";
 import Ennemy from "./enemies.js";
 
-const SCREEN_X_SIZE = 1920;
-const SCREEN_Y_SIZE = 1080;
-const WORLD_X_SIZE = 5000;
-const WORLD_Y_SIZE = 5000;
-
 
 //               (0, 1)
 //           Y    /  \
@@ -30,55 +25,60 @@ class GameScene extends Phaser.Scene {
     // Load all images once to prevent lagging
     this.load.image('FloorTiles', 'assets/Tiles.png');
     this.load.tilemapTiledJSON('map', 'assets/maptest.json');
-    this.load.atlas('player', 'assets/player.png', 'assets/player.json')
-    this.load.image('zombie', 'assets/zombie.png');
+    this.load.atlas('Player', 'assets/player.png', 'assets/player.json')
+    this.load.image('Zombie', 'assets/zombie.png');
+    this.load.image('Archer', 'assets/archer.png');
+    this.load.image('Bullet', 'assets/bullet.png');
+    this.load.image('Punch', 'assets/punch.png');
 
   }
 
   create() {
-    // Disable option GUI on right click
-    this.input.mouse.disableContextMenu();
 
     // Import map (floor)
     const map = this.add.tilemap('map');
-    const tileset = map.addTilesetImage('FloorTiles', 'FloorTiles');
+    var tileset = map.addTilesetImage('FloorTiles');
     map.createLayer('FloorLayer', tileset);
-    this.wallLayer = map.createLayer('WallLayer', tileset)
 
     // Player and camera
-    this.player = new Player(this, 150, 150, "Gustave", 100, 150, 6, 12, 3);
+    this.player = new Player(this, 150, 150, "Gustave", 100, 150, 6, 2);
     this.cameras.main.startFollow(this.player.sprite, true);
 
     // Ennemies
-    for (let i = 0; i < 7; i++) {
-      var newGuy = new Ennemy(this, -150+i*50, 300, 'Zombie', 100, 100, 1, 1, 30);
-      newGuy.setTarget(this.player);
-      
+    for (let i = 0; i < 7; i++) { // Zombies
+      var newGuy = new Ennemy(this, -150 + i * 50, 300, 'Zombie', 100, 100, 1, 1, 30);
       this.ennemies.forEach(ennemy => { // Add collisions with all enemies
         this.physics.add.collider(newGuy.sprite, ennemy.sprite);
       })
-      this.physics.add.collider(newGuy.sprite, this.player.sprite);
-      this.ennemies.push(newGuy);
+      this.ennemies.push(newGuy); // add to list of ennemies
     }
-
-    // Player Collision with world
-    map.setCollisionBetween(1, 999, true, 'WallLayer');
-    this.physics.world.addCollider(this.player.sprite, this.wallLayer)
-    this.wallLayer.setCollisionByProperty({ collides: true });
-
-    // debug config
-    const debugGraphics = this.add.graphics().setAlpha(0.7)
-	  this.wallLayer.renderDebug(debugGraphics, {
-		tileColor: null,
-		collidingTileColor: new Phaser.Display.Color(243, 234, 48, 255),
-		faceColor: new Phaser.Display.Color(40, 39, 37, 255)
+    for (let i = 0; i < 3; i++) { // Archers
+      var newGuy = new Ennemy(this, -50 + i * 50, 400, 'Archer', 100, 75, 10, 0.3, 100);
+      this.ennemies.forEach(ennemy => { // Add collisions with all enemies
+        this.physics.add.collider(newGuy.sprite, ennemy.sprite);
+      })
+      this.ennemies.push(newGuy); // add to list of ennemies
+    }
+    this.ennemies.forEach(ennemy => { // Adding collision with and targetting the player
+      ennemy.setTarget(this.player);
+      this.physics.add.collider(ennemy.sprite, this.player.sprite);
     });
+
+    // Disable option GUI on right click
+    this.input.mouse.disableContextMenu();
   }
 
   update() {
+    var pointer = this.input.activePointer;
     this.player.checkKeyboard();
     this.ennemies.forEach(ennemy => {
-      ennemy.updateIA(this)
+      ennemy.updateIA(this);
+      if (!ennemy.isAlive) {
+        ennemy.destroyItself();
+        this.ennemies.splice(this.ennemies.indexOf(ennemy), 1);
+        destroy(ennemy);
+
+      }
       if (!this.player.isAlive()) {
         // Afficher menu mort
       }
