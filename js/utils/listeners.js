@@ -27,7 +27,7 @@ var listeners = {
     killCount: 0,
     damageDealt: 0,
     score: 0,
-    tickets: 100
+    tickets: 0
 }
 
 export default listeners
