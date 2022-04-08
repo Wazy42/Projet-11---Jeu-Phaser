@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Miriam+Libre:wght@700&family=Montserrat&family=Roboto+Slab&display=swap');
+
+/* ############## FONTS ############## */
+.roboto {
+    font-family: 'Roboto Slab', serif;
+}
+
+.miriam {
+    font-family: "Miriam Libre", sans-serif;
+}
+
+.montserrat {
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* ############## FONTS ############## */
+
+h2 {
+    padding-left: 6vw;
+}
+
+.canvas-holder {
+    overflow-y: hidden;
+}
+
+.container {
+    padding-left: 1vw !important;
+    padding-right: 1vw !important;
+    padding-top: 1vh !important;
+    padding-bottom: 1vh !important;
+}
+
+.p-container {
+    margin: 3vw;
+}
+
+.btn {
+    text-decoration: none!important;
+    color: white!important;
+    border-radius: 2rem!important;
+    display: inline-block!important;
+    margin: 1rem!important;
+    box-shadow: 1px 3px 7px 0px #25252573!important;
+    background-color: #a3469d!important;
+}
+
+.background-anthracite {
+    background-color: #313131;
+}
+
+.background-transparent-anthracite {
+    background-color: #31313154;
+}
+
+.background-transparent-white {
+    background-color: #ffffff54;
+}
+
+.return {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}

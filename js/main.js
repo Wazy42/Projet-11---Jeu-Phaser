@@ -1,17 +1,18 @@
 import StartScene from "./scenes/start.js"
 import GameScene from "./scenes/game.js"
+import DeathScene from "./scenes/death.js";
 
 const config = {
-  type: Phaser.WEBGL,
-  scale: { mode: Phaser.Scale.FIT },
-  backgroundColor: '#ff9900',
-  scene: [GameScene, StartScene],
+  type: Phaser.AUTO,
+  scale: { mode: Phaser.Scale.FIT},
+  backgroundColor: '#313131',
+  scene: [StartScene, GameScene, DeathScene],
   physics: {
     default: 'arcade',
     arcade: {
-      debug: true
+      debug: false
     }
   }
 }
 
-var game = new Phaser.Game(config);
+const game = new Phaser.Game(config);

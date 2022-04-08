@@ -1,9 +1,11 @@
-const VIEW_DISTANCE = 300;
+import Weapon from "../weapons/weapon.js"
+import listeners from "../utils/listeners.js";
+const VIEW_DISTANCE = 90000; // Distance in pixel (the enemy attack if the player is within this radius)
 
-export default class Ennemy {
+export default class Enemy {
   constructor(game, x, y, type, health, movementSpeed, attackDamage, attackSpeed, range) {
-    this.sprite = game.physics.add.sprite(x, y, type).setOrigin(0, 0).setPushable();
-    this.sprite.body.setSize(15, 30, 10, 10);
+    this.game = game;
+    this.sprite = game.physics.add.sprite(x, y, type).setPushable();
 
     this.health = health;
     this.movementSpeed = movementSpeed;
@@ -11,24 +13,27 @@ export default class Ennemy {
     this.attackSpeed = attackSpeed;
     this.range = range; // range (in pixels)
     this.attackOnCD = 0;
+    this.weapon = new Weapon(this.game, this);
 
-    this.ennemies = [];
+    this.enemies = [];
   }
 
   setTarget(target) {
     this.target = target;
   }
 
-  getTargetedBy(ennemy) {
-    this.ennemies.push(ennemy);
+  getTargetedBy(enemy) {
+    this.enemies.push(enemy);
   }
 
-  lossTargetFrom(ennemy) {
-    this.ennemies.splice(this.ennemies.indexOf(ennemy), 1);
+  lossTargetFrom(enemy) {
+    this.enemies.splice(this.enemies.indexOf(enemy), 1);
   }
-
+  
   getHurt(damage) {
     this.health -= damage;
+    listeners.damageDealt += damage;
+    listeners.score += damage;
   }
 
   isAlive() {
@@ -37,8 +42,8 @@ export default class Ennemy {
   }
 
   destroyItself() {
-    this.ennemies.forEach(ennemy => {
-      ennemy.setTarget(null);
+    this.enemies.forEach(enemy => {
+      enemy.setTarget(null);
     });
     this.sprite.destroy();
     this.target.lossTargetFrom(this);
@@ -46,33 +51,40 @@ export default class Ennemy {
 
   updateIA(game) { // this function is called in the phaser update (main loop)
     /*
-    The ennemy focus one target at a time, it goes straight to it
+    The enemy focus one target at a time, it goes straight to it
     */
 
-    this.sprite.setVelocity(0, 0); // Idle animation ?
+    this.sprite.setVelocity(0, 0);
 
     if (Phaser.Math.Distance.BetweenPoints(this.sprite, this.target.sprite) > VIEW_DISTANCE) {
       this.target.lossTargetFrom(this);
       return;
     }
-
     this.target.getTargetedBy(this)
-    if (Phaser.Math.Distance.BetweenPoints(this.sprite, this.target.sprite) > this.range)
-      game.physics.moveToObject(this.sprite, this.target.sprite, this.movementSpeed);
-    else {
-      this.sprite.setVelocity(0, 0);
+
+    let distanceToTarget = Phaser.Math.Distance.BetweenPoints(this.sprite, this.target.sprite)
+    game.physics.moveToObject(this.sprite, this.target.sprite, this.movementSpeed);
+    if (this.sprite.body.velocity.x > 0)
+      this.sprite.flipX = true;
+    else
+      this.sprite.flipX = false;
+
+    if (distanceToTarget < this.range) {
+      if (distanceToTarget < this.range * 0.8) this.sprite.setVelocity(0, 0); // Enemy stop when he reach 80% of his range
       if (!this.attackOnCD) {
         this.attackCooldown();
         game.time.delayedCall(1000 / this.attackSpeed, this.attackCooldown, [], this);
         this.attackTarget()
-        
       }
     }
   }
 
   attackTarget() {
-    this.target.getHurt(this.attackDamage);
-    // add animation here
+    if (this.range > 100) {
+      this.weapon.fireBullet(this.target.sprite);
+    } else {
+      this.weapon.fireBlade(this.target.sprite);
+    }
   }
 
   attackCooldown() {
